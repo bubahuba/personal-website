@@ -86,11 +86,11 @@
 				<figure class="flex flex-col gap-2">
 					<button
 						type="button"
-						class="overflow-hidden rounded-xl border text-left cursor-pointer"
+						class="overflow-hidden rounded-xl border text-left cursor-pointer group"
 						aria-label="View larger: {shot.alt}"
 						onclick={() => (photo = i + 1)}
 					>
-						<img src={shot.src} alt="" class="max-h-[32rem] w-full bg-muted object-contain" />
+						<img src={shot.src} alt="" class="max-h-[32rem] w-full bg-muted object-cover group-hover:scale-105 transition-transform duration-500 object-center" />
 					</button>
 					<figcaption class="text-sm leading-relaxed text-muted-foreground">{shot.alt}</figcaption>
 				</figure>
