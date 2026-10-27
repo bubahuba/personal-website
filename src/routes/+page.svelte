@@ -72,9 +72,9 @@
 			</p>
 			<div class="flex flex-wrap gap-2">
 				{#each tracks as track (track.id)}
-					<Badge variant="outline">{track.title}</Badge>
+					<Badge variant="outline" class="notranslate">{track.title}</Badge>
 				{/each}
-				<Badge variant="outline">Remote · Třebíč</Badge>
+				<Badge variant="outline" class="notranslate">Remote · Třebíč</Badge>
 			</div>
 			<div class="flex flex-wrap gap-2">
 				<Button href="#work">Selected work</Button>
@@ -157,7 +157,7 @@
 					<h3 class="font-serif text-2xl">{group.title}</h3>
 					<div class="flex flex-wrap gap-1.5">
 						{#each group.items as item (item)}
-							<Badge variant="secondary">{item}</Badge>
+							<Badge variant="secondary" class="notranslate">{item}</Badge>
 						{/each}
 					</div>
 				</div>

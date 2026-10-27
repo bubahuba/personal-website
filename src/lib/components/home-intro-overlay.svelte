@@ -3,26 +3,24 @@
 
 	let {
 		visible = false,
-		showArrow = false,
+		toTop = false,
 		onScrollHint
 	}: {
 		visible?: boolean;
-		showArrow?: boolean;
+		toTop?: boolean;
 		onScrollHint?: () => void;
 	} = $props();
 </script>
 
 {#if visible}
-	<div class="home-intro" aria-hidden="true">
-		{#if showArrow}
-			<button
-				type="button"
-				class="home-intro__arrow"
-				aria-label="Scroll to explore"
-				onclick={() => onScrollHint?.()}
-			>
-				<ArrowDown class="size-8" strokeWidth={2.25} />
-			</button>
-		{/if}
+	<div class="home-intro">
+		<button
+			type="button"
+			class={['home-intro__arrow', toTop && 'home-intro__arrow--up']}
+			aria-label={toTop ? 'Back to top' : 'Scroll to explore'}
+			onclick={() => onScrollHint?.()}
+		>
+			<ArrowDown class="home-intro__arrow-icon size-8" strokeWidth={2.25} />
+		</button>
 	</div>
 {/if}

@@ -196,7 +196,11 @@
 				onclick={onBrandClick}
 			>
 			<span class="site-header__brand-mark-wrap inline-flex shrink-0 items-center justify-center">
-				<Mark clipSuffix="brand" class="site-header__brand-mark mark--hero text-4xl" />
+				<Mark
+					clipSuffix="brand"
+					class="site-header__brand-mark mark--hero text-4xl"
+					portrait={person.portrait}
+				/>
 			</span>
 			<span class="site-header__brand-titles flex flex-col leading-none">
 				<span

@@ -10,12 +10,13 @@
 		HOME_INTRO_SKIP_SCROLL,
 		HOME_INTRO_STORE_KEY,
 		type HomeIntroStore,
-		scrollToHomeHero
+		scrollToHomeHero,
+		scrollToHomeIntro
 	} from '#lib/home-intro';
 	import { setContext } from 'svelte';
 	import { mountHomeIntroScroll } from '#lib/home-intro-scroll';
 	import { applyDocumentLanguage, languageFromLocale } from '#lib/languages';
-	import { person, site } from '#lib/profile';
+	import { person, site, type Project } from '#lib/profile';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -31,8 +32,8 @@
 	let introSkipPermanent = $state(false);
 	let introScrollEnabled = $state(page.url.pathname === '/');
 
-	const introOverlayVisible = $derived(home && introScrollEnabled);
-	const introArrowVisible = $derived(introOverlayVisible && introProgress < 0.92);
+	const introOverlayVisible = $derived(home);
+	const introArrowToTop = $derived(introProgress >= 0.92);
 	const introRainFade = $derived(
 		introProgress >= 0.98 ? 0 : Math.max(0.15, 1 - introProgress * 0.9)
 	);
@@ -56,6 +57,10 @@
 	}
 
 	function scrollIntroHint() {
+		if (introArrowToTop) {
+			scrollToHomeIntro(true);
+			return;
+		}
 		if (!scrollToHomeHero(true)) {
 			const range = parseFloat(
 				getComputedStyle(pageRoot ?? document.documentElement).getPropertyValue(
@@ -120,12 +125,13 @@
 		requestAnimationFrame(() => window.dispatchEvent(new Event('scroll')));
 	});
 
-	const project = $derived(
-		page.data.project as { title?: string; summary?: string } | undefined
-	);
-	const title = $derived(project?.title ? `${project.title} — Peter Huba` : site.title);
+	const project = $derived(page.data.project as Project | undefined);
+	const title = $derived(project?.title ? `${project.title} — ${person.name}` : site.title);
 	const description = $derived(project?.summary ?? site.description);
-	const image = `${site.origin}${person.portrait}`;
+	const imagePath = $derived(project?.image.src ?? person.portrait);
+	const image = $derived(`${site.origin}${imagePath}`);
+	const imageAlt = $derived(project?.image.alt ?? person.name);
+	const imageType = $derived(imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg');
 	const url = $derived(`${site.origin}${page.url.pathname}`);
 </script>
 
@@ -151,21 +157,23 @@
 	<meta property="og:description" content={description} />
 	<meta property="og:url" content={url} />
 	<meta property="og:image" content={image} />
-	<meta property="og:image:alt" content="Peter Huba" />
-	<meta property="og:image:type" content="image/jpeg" />
-	<meta property="og:image:width" content="1800" />
-	<meta property="og:image:height" content="1149" />
+	<meta property="og:image:alt" content={imageAlt} />
+	<meta property="og:image:type" content={imageType} />
+	{#if !project}
+		<meta property="og:image:width" content="1800" />
+		<meta property="og:image:height" content="1149" />
+	{/if}
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={title} />
 	<meta name="twitter:description" content={description} />
 	<meta name="twitter:image" content={image} />
-	<meta name="twitter:image:alt" content="Peter Huba" />
+	<meta name="twitter:image:alt" content={imageAlt} />
 </svelte:head>
 
 <div class="flex min-h-svh flex-col" data-page-root bind:this={pageRoot}>
 	<HomeIntroOverlay
 		visible={introOverlayVisible}
-		showArrow={introArrowVisible}
+		toTop={introArrowToTop}
 		onScrollHint={scrollIntroHint}
 	/>
 	<SiteHeader {introProgress} introScrollActive={introScrollEnabled && introProgress < 1} />
