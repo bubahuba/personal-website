@@ -86,7 +86,7 @@
 				<figure class="flex flex-col gap-2">
 					<button
 						type="button"
-						class="overflow-hidden rounded-xl border text-left"
+						class="overflow-hidden rounded-xl border text-left cursor-pointer"
 						aria-label="View larger: {shot.alt}"
 						onclick={() => (photo = i + 1)}
 					>
