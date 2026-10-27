@@ -16,7 +16,7 @@
 	import { setContext } from 'svelte';
 	import { mountHomeIntroScroll } from '#lib/home-intro-scroll';
 	import { applyDocumentLanguage, languageFromLocale } from '#lib/languages';
-	import { person, site, type Project } from '#lib/profile';
+	import { person, site, type Project, type Shot } from '#lib/profile';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -128,11 +128,20 @@
 	const project = $derived(page.data.project as Project | undefined);
 	const title = $derived(project?.title ? `${project.title} — ${person.name}` : site.title);
 	const description = $derived(project?.summary ?? site.description);
-	const imagePath = $derived(project?.image.src ?? person.portrait);
-	const image = $derived(`${site.origin}${imagePath}`);
-	const imageAlt = $derived(project?.image.alt ?? person.name);
-	const imageType = $derived(imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg');
+	const ogShots = $derived.by((): Shot[] => {
+		if (project) return [project.image, ...project.gallery];
+		return [{ src: person.portrait, alt: person.name }];
+	});
+	const image = $derived(`${site.origin}${ogShots[0].src}`);
+	const imageAlt = $derived(ogShots[0].alt);
 	const url = $derived(`${site.origin}${page.url.pathname}`);
+
+	function imageMime(src: string) {
+		if (src.endsWith('.png')) return 'image/png';
+		if (src.endsWith('.webp')) return 'image/webp';
+		if (src.endsWith('.gif')) return 'image/gif';
+		return 'image/jpeg';
+	}
 </script>
 
 <svelte:head>
@@ -156,9 +165,11 @@
 	<meta property="og:title" content={title} />
 	<meta property="og:description" content={description} />
 	<meta property="og:url" content={url} />
-	<meta property="og:image" content={image} />
-	<meta property="og:image:alt" content={imageAlt} />
-	<meta property="og:image:type" content={imageType} />
+	{#each ogShots as shot (shot.src)}
+		<meta property="og:image" content={`${site.origin}${shot.src}`} />
+		<meta property="og:image:alt" content={shot.alt} />
+		<meta property="og:image:type" content={imageMime(shot.src)} />
+	{/each}
 	{#if !project}
 		<meta property="og:image:width" content="1800" />
 		<meta property="og:image:height" content="1149" />
