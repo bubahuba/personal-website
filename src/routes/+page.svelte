@@ -232,7 +232,7 @@
 				{#each earlier as site (site.href)}
 					<li>
 						<a
-							class="border-b-4 border-highlight font-medium"
+							class="border-b-4 border-highlight font-medium notranslate"
 							href={site.href}
 							target="_blank"
 							rel="noreferrer">{site.label}</a
