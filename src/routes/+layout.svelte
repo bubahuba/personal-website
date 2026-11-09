@@ -16,6 +16,7 @@
 	import { setContext } from 'svelte';
 	import { mountHomeIntroScroll } from '#lib/home-intro-scroll';
 	import { applyDocumentLanguage, languageFromLocale } from '#lib/languages';
+	import { mediaUrl } from '#lib/media-url';
 	import { person, site, type Project, type Shot } from '#lib/profile';
 	import type { LayoutProps } from './$types';
 
@@ -133,7 +134,7 @@
 		if (project) return [project.image, ...project.gallery];
 		return [{ src: person.portrait, alt: person.name }];
 	});
-	const image = $derived(`${site.origin}${ogShots[0].src}`);
+	const image = $derived(`${site.origin}${mediaUrl(ogShots[0].src)}`);
 	const imageAlt = $derived(ogShots[0].alt);
 	const url = $derived(`${site.origin}${page.url.pathname}`);
 

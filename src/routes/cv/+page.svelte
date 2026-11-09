@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { mediaUrl } from '#lib/media-url';
 	import {
 		earlier,
 		education,
@@ -56,7 +57,7 @@
 					<a href="/work/{project.slug}" class="cv-project__thumb-link shrink-0">
 						<img
 							class="cv-project__thumb"
-							src={project.image.src}
+							src={mediaUrl(project.image.src)}
 							alt=""
 							loading="lazy"
 							decoding="async"

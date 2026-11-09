@@ -3,6 +3,7 @@
 	import { Button } from '#lib/components/ui/button';
 	import { Separator } from '#lib/components/ui/separator';
 	import IframeLightbox from '#lib/components/iframe-lightbox.svelte';
+	import { mediaUrl } from '#lib/media-url';
 	import ProjectCard from '#lib/components/project-card.svelte';
 	import {
 		earlier,
@@ -89,7 +90,7 @@
 				onclick={() => (tour = true)}
 			>
 				<img
-					src={person.portrait}
+					src={mediaUrl(person.portrait)}
 					alt=""
 					class="h-full w-full object-cover object-[30%_center] motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105"
 				/>

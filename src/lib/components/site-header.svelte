@@ -8,6 +8,7 @@
 	import LanguageMenu from './language-menu.svelte';
 	import Mark from './mark.svelte';
 	import ThemeToggle from './theme-toggle.svelte';
+	import { mediaUrl } from '#lib/media-url';
 	import { person } from '#lib/profile';
 	import { scrollToHomeHero, scrollToHomeIntro } from '#lib/home-intro';
 	import { watchSectionNav } from '#lib/section-nav-spy';
@@ -200,7 +201,7 @@
 				<Mark
 					clipSuffix="brand"
 					class="site-header__brand-mark mark--hero text-4xl"
-					portrait={person.portrait}
+					portrait={mediaUrl(person.portrait)}
 				/>
 			</span>
 			<span class="site-header__brand-titles flex flex-col leading-none">

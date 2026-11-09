@@ -3,11 +3,17 @@
 	import { Badge } from '#lib/components/ui/badge';
 	import { Button } from '#lib/components/ui/button';
 	import { Separator } from '#lib/components/ui/separator';
+	import { mediaUrl } from '#lib/media-url';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const project = $derived(data.project);
-	const shots = $derived([project.image, ...project.gallery]);
+	const shots = $derived(
+		[project.image, ...project.gallery].map((shot) => ({
+			...shot,
+			src: mediaUrl(shot.src)
+		}))
+	);
 	let photo = $state<number | null>(null);
 </script>
 
@@ -30,7 +36,7 @@
 			aria-label="View larger: {project.image.alt}"
 			onclick={() => (photo = 0)}
 		>
-			<img src={project.image.src} alt="" class="w-full" />
+			<img src={mediaUrl(project.image.src)} alt="" class="w-full" />
 		</button>
 		<figcaption class="text-sm leading-relaxed text-muted-foreground">{project.image.alt}</figcaption>
 	</figure>
@@ -99,7 +105,11 @@
 						aria-label="View larger: {shot.alt}"
 						onclick={() => (photo = i + 1)}
 					>
-						<img src={shot.src} alt="" class="max-h-[32rem] w-full bg-muted object-cover group-hover:scale-105 transition-transform duration-500 object-center" />
+						<img
+							src={mediaUrl(shot.src)}
+							alt=""
+							class="max-h-[32rem] w-full bg-muted object-cover group-hover:scale-105 transition-transform duration-500 object-center"
+						/>
 					</button>
 					<figcaption class="text-sm leading-relaxed text-muted-foreground">{shot.alt}</figcaption>
 				</figure>

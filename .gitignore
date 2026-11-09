@@ -21,3 +21,7 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Webp generated from static/portfolio and static/img sources (vite.static-webp)
+/static/portfolio/*.webp
+/static/img/*.webp

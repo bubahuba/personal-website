@@ -7,6 +7,7 @@
 		CardHeader,
 		CardTitle
 	} from '#lib/components/ui/card';
+	import { mediaUrl } from '#lib/media-url';
 	import type { Project } from '#lib/profile';
 
 	let { project }: { project: Project } = $props();
@@ -16,7 +17,7 @@
 	<Card class="h-full pt-0!">
 		<div class="home-photo aspect-[16/10] overflow-hidden">
 			<img
-				src={project.image.src}
+				src={mediaUrl(project.image.src)}
 				alt={project.image.alt}
 				class="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105 {project.image.focus ===
 				'center'
