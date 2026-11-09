@@ -25,6 +25,7 @@
 	setContext(HOME_INTRO_STORE_KEY, homeIntroStore);
 
 	const home = $derived(page.url.pathname === '/');
+	const cvPage = $derived(page.url.pathname === '/cv');
 
 	let pageRoot = $state<HTMLElement | null>(null);
 	let introProgress = $state(page.url.pathname === '/' ? 0 : 1);
@@ -181,7 +182,13 @@
 	<meta name="twitter:image:alt" content={imageAlt} />
 </svelte:head>
 
-<div class="flex min-h-svh flex-col" data-page-root bind:this={pageRoot}>
+<div
+	class="flex min-h-svh flex-col"
+	data-page-root
+	data-home={home ? '' : undefined}
+	data-cv={cvPage ? '' : undefined}
+	bind:this={pageRoot}
+>
 	<HomeIntroOverlay
 		visible={introOverlayVisible}
 		toTop={introArrowToTop}

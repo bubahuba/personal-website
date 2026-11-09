@@ -14,7 +14,7 @@
 
 <a href="/work/{project.slug}" class="group block h-full">
 	<Card class="h-full pt-0!">
-		<div class="aspect-[16/10] overflow-hidden">
+		<div class="home-photo aspect-[16/10] overflow-hidden">
 			<img
 				src={project.image.src}
 				alt={project.image.alt}

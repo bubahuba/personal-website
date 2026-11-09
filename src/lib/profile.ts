@@ -21,6 +21,8 @@ export type Project = {
 	note?: string;
 	href?: string;
 	hrefLabel?: string;
+	extraLinks?: { href: string; label: string }[];
+	demoCredentials?: { user: string; password: string };
 	image: Shot;
 	gallery: Shot[];
 };
@@ -43,7 +45,76 @@ export const site = {
 		'Peter Huba is a design-trained full-stack developer in Třebíč. Twenty-five years of interfaces, product UI, and systems shipped with AI in the loop.'
 };
 
+export const workProminentCount = 6;
+
 export const projects: Project[] = [
+	{
+		slug: 'izomapa-trebic',
+		title: 'Izomapa Třebíč',
+		eyebrow: 'Žijeme v Židech · 2026',
+		summary:
+			'Streets and roofs you know by heart, suddenly like a small town seen from above: an isometric pixel map of Třebíč in a SimCity 2000 mood. Pick a quarter, click between blocks and churches, and notice again how neatly the city is laid out.',
+		role:
+			'Built this city instance on Adam Klatovský’s open-source izomapa stack: municipal data, dominant buildings, tile rendering, and the hosted viewer.',
+		when: '2026',
+		context: 'trebic.zijemevzidech.cz · neighbourhood association in the Jewish quarter.',
+		featured: true,
+		tracks: ['design', 'fullstack', 'ai'],
+		stack: [
+			'izomapa',
+			'Python',
+			'three.js',
+			'OpenSeadragon',
+			'Playwright',
+			'OpenStreetMap',
+			'ČÚZK',
+			'GTFS',
+			'Cursor'
+		],
+		did: [
+			'Twenty-five map squares from municipal boundaries through laser building heights, forest masks, and seasonal Deep Zoom tiles.',
+			'Hand-tuned dominants — basilica, St Martin, the windmill — from local photos instead of generic blocks.',
+			'Made moving cars clickable so the view follows them on the map; set default weather and time of day for the opening look.',
+			'MHD from MAD Třebíč GTFS; seasons, day and night, weather, and click-through buildings in the viewer.',
+			'Shipped as static tiles on trebic.zijemevzidech.cz for Žijeme v Židech.',
+			'Třebíč is one deployment of the shared izomapa stack; other Czech towns are in the public catalog on izomapa.fun.'
+		],
+		note: 'The map engine is AGPL izomapa by Adam Klatovský. I built, tuned, and host this Třebíč instance. More cities built with the same tool are listed at izomapa.fun/mesta.',
+		href: 'https://trebic.zijemevzidech.cz/',
+		hrefLabel: 'Open the map',
+		extraLinks: [{ href: 'https://izomapa.fun/mesta', label: 'Other cities on izomapa' }],
+		image: {
+			src: '/portfolio/izomapa-trebic-hero.png',
+			alt: 'Isometric pixel map of Třebíč: quarter blocks, church towers, and the game-style control panel.',
+			focus: 'center'
+		},
+		gallery: [
+			{
+				src: '/portfolio/izomapa-trebic-1.png',
+				alt: 'Wide view of the tiled map with streets and roofs in isometric perspective.'
+			},
+			{
+				src: '/portfolio/izomapa-trebic-2.png',
+				alt: 'Closer zoom on a neighbourhood with buses and building footprints.'
+			},
+			{
+				src: '/portfolio/izomapa-trebic-3.png',
+				alt: 'Jewish quarter and basilica area in winter lighting.'
+			},
+			{
+				src: '/portfolio/izomapa-trebic-4.png',
+				alt: 'Detail of streets near the centre with seasonal tiles.'
+			},
+			{
+				src: '/portfolio/izomapa-trebic-bus-winter.png',
+				alt: 'Winter map with bus line 14 selected: the follow bar shows the route, next stop, and the camera tracks the vehicle.'
+			},
+			{
+				src: '/portfolio/izomapa-trebic-bus-night.png',
+				alt: 'Night scene in a housing estate: streetlights, lit windows, and the view following bus 14 through the map.'
+			}
+		]
+	},
 	{
 		slug: 'fleet',
 		title: 'FLEET',
@@ -73,6 +144,10 @@ export const projects: Project[] = [
 		note: 'The live demo is a test tenant. I will send access with an application. The screenshots are from that demo, not a customer’s production data.',
 		href: 'https://fleet-management-2.rascasone.dev/en/dashboard',
 		hrefLabel: 'Open the demo',
+		demoCredentials: {
+			user: 'lucie.novakova@fleet-rasca.cz',
+			password: 'Test123'
+		},
 		image: {
 			src: '/portfolio/fleet.jpg',
 			alt: 'FLEET dashboard with active repairs, workers, and a daily agenda of documents and invoices.'
@@ -113,6 +188,77 @@ export const projects: Project[] = [
 			{
 				src: '/portfolio/fleet-swm-vehicle.jpg',
 				alt: 'An SWM vehicle record in English: photo, status, center, and fuel type.'
+			}
+		]
+	},
+	{
+		slug: 'cermak',
+		title: 'Čermák Trading',
+		eyebrow: 'Wholesale · 2025–now',
+		summary:
+			'A Czech bulk wholesaler of screws and stainless fasteners. The old site was PHP, tables, and legacy URLs — I am replacing it with a new public front end, a REST API, and an admin area called Sistim, without throwing away twenty years of catalog data.',
+		role: 'UI/UX, SvelteKit frontend, PHP API, and the Sistim admin. Primary author, with Cursor in the loop.',
+		when: '2025–2026',
+		context: 'Cermak Trading s.r.o., Račerovice. Czech public; machine translation to many languages on the client.',
+		featured: true,
+		tracks: ['fullstack', 'design', 'ai'],
+		stack: [
+			'SvelteKit',
+			'Three.js',
+			'PHP REST API',
+			'MariaDB',
+			'Static prerender',
+			'Tailwind',
+			'shadcn',
+			'On-device page translation',
+			'Cursor'
+		],
+		did: [
+			'Rebuilt the marketing home and CMS pages in SvelteKit, with light and dark mode and a language picker that translates the Czech UI in the browser.',
+			'Added a Three.js hero: draggable nuts and bolts in a ring, lit like product photography, tied to the wholesaler’s story.',
+			'Shipped a new catalog search over ~21k SKUs — norm, material, surface, shape, diameter, length — with product detail, drawings, and static HTML for SEO where it still matters.',
+			'Introduced Sistim: menu tree, static pages, downloads, catalog folders, and site settings, all on the same API the public site uses.',
+			'Kept legacy PHP routes and Apache rewrites working beside the new build so migration can be gradual, not a big-bang cutover.'
+		],
+		note: 'Mixed environment with php API backend and SvelteKit static generated frontend. Changes in cms are mirrored to generated html files by php without nodeJS running',
+		href: 'https://www.cermaktrading.cz/',
+		hrefLabel: 'Visit cermaktrading.cz',
+		image: {
+			src: '/portfolio/cermak.jpg',
+			alt: 'Home page in light mode: Czech headline, catalog call-to-action, and a Three.js ring of metal nuts around the logo.'
+		},
+		gallery: [
+			{
+				src: '/portfolio/cermak-dark.jpg',
+				alt: 'The same home hero in dark mode, with the floating fastener scene.'
+			},
+			{
+				src: '/portfolio/cermak-katalog.jpg',
+				alt: 'Catalog search in Czech, light mode: six filters and the first page of results from a twenty-thousand-item database.'
+			},
+			{
+				src: '/portfolio/cermak-katalog-dark.jpg',
+				alt: 'Catalog in dark mode, with filter dropdowns and product thumbnails.'
+			},
+			{
+				src: '/portfolio/cermak-produkt.jpg',
+				alt: 'Product detail in Czech: technical drawing, DIN title, and a table of code, material, dimensions, and pack size.'
+			},
+			{
+				src: '/portfolio/cermak-sistim-prehled.jpg',
+				alt: 'Sistim admin overview in light mode: shortcuts to menu, pages, files, catalog, and settings.'
+			},
+			{
+				src: '/portfolio/cermak-sistim-prehled-dark.jpg',
+				alt: 'Sistim overview in dark mode.'
+			},
+			{
+				src: '/portfolio/cermak-sistim-katalog-dark.jpg',
+				alt: 'Sistim catalog admin: hundreds of category folders and import tools for the legacy Czech catalog.'
+			},
+			{
+				src: '/portfolio/cermak-sistim-stranky.jpg',
+				alt: 'Sistim static pages: publish state, menu placement, and links into the HTML editor.'
 			}
 		]
 	},
@@ -173,6 +319,10 @@ export const projects: Project[] = [
 		note: 'Still a test environment. Happy to walk through a vote on a call.',
 		href: 'https://app-test.reelvote.com',
 		hrefLabel: 'Open the test app',
+		demoCredentials: {
+			user: 'peter@huba.sk',
+			password: 'aaaAAA111*'
+		},
 		image: {
 			src: '/portfolio/reelvote-vote.jpg',
 			alt: 'Reelvote ballot editor with a welcome screen, a question, and a voter preview about road trips.'
@@ -560,6 +710,9 @@ export function getProject(slug: string) {
 export const featured = projects.filter((project) => project.featured);
 export const further = projects.filter((project) => !project.featured);
 
+export const workProminent = projects.slice(0, workProminentCount);
+export const workMore = projects.slice(workProminentCount);
+
 export const tracks = [
 	{
 		id: 'design' as const,
@@ -627,7 +780,7 @@ export const roles = [
 		title: 'Frontend developer, UI/UX designer',
 		when: 'Nov 2024 — present',
 		place: 'Prague · remote',
-		text: 'Product design and frontend for client systems. FLEET is the large one: workshop, fleet, stock, and invoicing, Svelte in front of Rails.'
+		text: 'Product design and frontend for client systems. FLEET is the large one; Cermak Trading is the wholesale catalog and CMS rewrite — SvelteKit, PHP API, and Sistim admin.'
 	},
 	{
 		org: 'Chyron',
@@ -714,7 +867,7 @@ export const languages = [
 	['Dutch', 'Professional']
 ] as const;
 
-export const earlier = [
+const earlierSites = [
 	{ href: 'https://opobchod.cz/', label: 'opobchod.cz', note: 'HTML remake of an early shop made in Flash. 2007. Build only.' },
 	{ href: 'https://ruudvanmegen.nl/', label: 'ruudvanmegen.nl', note: 'ExpressionEngine 1, 2008. Build only.' },
 	{
@@ -793,4 +946,14 @@ export const earlier = [
 		label: 'kcklastor.sk',
 		note: 'ExpressionEngine 6, 2022. Community house. Design and build.'
 	}
-];
+] as const;
+
+function yearFromEarlierNote(note: string): number {
+	const match = note.match(/\b20\d{2}\b/);
+	return match ? Number(match[0]) : 0;
+}
+
+/** Newest first (homepage, CV, PDF). */
+export const earlier = [...earlierSites].sort(
+	(a, b) => yearFromEarlierNote(b.note) - yearFromEarlierNote(a.note)
+);

@@ -49,8 +49,17 @@
 				<p class="text-muted-foreground">Context</p>
 				<p>{project.context}</p>
 			</div>
-			{#if project.href}
-				<Button href={project.href} target="_blank" rel="noreferrer">{project.hrefLabel}</Button>
+			{#if project.href || (project.extraLinks?.length ?? 0) > 0}
+				<div class="flex flex-col gap-2">
+					{#if project.href}
+						<Button href={project.href} target="_blank" rel="noreferrer">{project.hrefLabel}</Button>
+					{/if}
+					{#each project.extraLinks ?? [] as link (link.href)}
+						<Button variant="outline" href={link.href} target="_blank" rel="noreferrer"
+							>{link.label}</Button
+						>
+					{/each}
+				</div>
 			{/if}
 		</div>
 

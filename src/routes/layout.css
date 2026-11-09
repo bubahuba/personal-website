@@ -148,6 +148,36 @@
 	}
 }
 
+@property --home-photo-saturate {
+	syntax: '<number>';
+	inherits: false;
+	initial-value: 0;
+}
+
+[data-page-root][data-home] .home-photo {
+	position: relative;
+}
+
+[data-page-root][data-home] .home-photo img {
+	--home-photo-saturate: 0;
+	filter: saturate(var(--home-photo-saturate));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	[data-page-root][data-home] .home-photo img {
+		transition:
+			--home-photo-saturate 2.5s cubic-bezier(0.22, 1, 0.36, 1),
+			scale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+}
+
+@media (hover: hover) and (pointer: fine) {
+	[data-page-root][data-home] a:hover .home-photo img,
+	[data-page-root][data-home] button.home-photo:hover img {
+		--home-photo-saturate: 1;
+	}
+}
+
 .home-intro-scroll-spacer {
 	position: relative;
 	overflow: hidden;
@@ -317,7 +347,8 @@
 	background: var(--background);
 }
 
-.lang-progress-trigger:hover .lang-progress:not(.lang-progress--idle)::before {
+.lang-progress-trigger:hover .lang-progress:not(.lang-progress--idle)::before,
+.cv-pdf-download-trigger:hover .lang-progress:not(.lang-progress--idle)::before {
 	background: var(--muted);
 }
 
@@ -475,7 +506,19 @@
 
 @media print {
 	header,
+	footer {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
 	footer a {
 		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+
+	[data-slot='card'],
+	article.rounded-xl {
+		break-inside: avoid;
+		page-break-inside: avoid;
 	}
 }

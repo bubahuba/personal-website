@@ -7,15 +7,15 @@
 	import {
 		earlier,
 		education,
-		featured,
-		further,
 		languages,
 		person,
 		roles,
 		site,
 		skillGroups,
 		teaching,
-		tracks
+		tracks,
+		workMore,
+		workProminent
 	} from '#lib/profile';
 
 	const jsonLd = {
@@ -77,14 +77,14 @@
 				<Badge variant="outline" class="notranslate">Remote · Třebíč</Badge>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				<Button href="#work">Selected work</Button>
+				<Button href="#work">Work</Button>
 				<Button variant="outline" href={`mailto:${person.email}`}>hire@huba.sk</Button>
 			</div>
 		</div>
 		<figure class="flex flex-col gap-3">
 			<button
 				type="button"
-				class="group aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-xl"
+				class="home-photo group aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-xl"
 				aria-label="Open a 360° view of Peter Huba at home in the Třebíč Jewish quarter"
 				onclick={() => (tour = true)}
 			>
@@ -102,29 +102,20 @@
 
 	<section id="work" class="flex scroll-mt-24 flex-col gap-8">
 		<div class="flex max-w-2xl flex-col gap-3">
-			<h2 class="font-serif text-4xl">Selected work</h2>
+			<h2 class="font-serif text-4xl">Work</h2>
 			<p class="leading-relaxed text-foreground/80">
-				Four pieces that carry a senior brief: a multi-tenant product, a data desk, a voting tool,
-				and a company site I lived with for a decade. Each one has its own page.
+				A cross-section of skills and experience: product UI, the systems behind it, and how I work
+				when AI is in the loop. Each project has its own page with role, stack, and an honest read on
+				scope.
 			</p>
 		</div>
 		<div class="grid gap-5 md:grid-cols-2">
-			{#each featured as project (project.slug)}
+			{#each workProminent as project (project.slug)}
 				<ProjectCard {project} />
 			{/each}
 		</div>
-	</section>
-
-	<section id="work-further" class="flex scroll-mt-24 flex-col gap-8">
-		<div class="flex max-w-2xl flex-col gap-3">
-			<h2 class="font-serif text-4xl">Further range</h2>
-			<p class="leading-relaxed text-foreground/80">
-				Shipped mobile work, two personal tools, and a first game in Lua. Where I only styled an
-				app, the page says so.
-			</p>
-		</div>
 		<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-			{#each further as project (project.slug)}
+			{#each workMore as project (project.slug)}
 				<ProjectCard {project} />
 			{/each}
 		</div>

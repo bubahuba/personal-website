@@ -168,6 +168,7 @@
 	let reduceMotion = false;
 	let mounted = false;
 	let cameraReady = false;
+	let zoomSeeded = false;
 
 	/** Smoothed camera offset in px (shifts column field / perspective). */
 	let camX = 0;
@@ -179,9 +180,44 @@
 	let lastPointerY = 0;
 	let pointerDownX = 0;
 	let pointerDownY = 0;
+	let pointerDownAt = 0;
+	let zoomLogAtPointerDown = 0;
+	/** Desktop: zoom into depth while primary mouse button is held. */
+	let mouseDepthZoom = false;
 	/** Pause rain fall + glyph flicker while pointer is down on the canvas. */
 	let dragAnimPaused = false;
 	const TAP_SPAWN_PX = 10;
+
+	/** Log zoom added each frame while mouse button is held (desktop). */
+	const ZOOM_MOUSE_HOLD_LOG = 0.0095;
+	/** Default depth on load: two short desktop hold-clicks (hold + coast each). */
+	const ZOOM_INITIAL_CLICK_COUNT = 2;
+	const ZOOM_SIM_HOLD_FRAMES = 24;
+	const ZOOM_SIM_COAST_FRAMES = 45;
+	/** Pinch: multiplier on ln(distance ratio). */
+	const ZOOM_PINCH_GAIN = 1.85;
+	/** One seamless zoom loop — display scale maps 0→1 across this log span. */
+	const ZOOM_LOG_CYCLE = Math.log(4);
+	const ZOOM_SCALE_MIN = 0.68;
+	const ZOOM_SCALE_MAX = 2.72;
+	const ZOOM_SMOOTH = 0.14;
+	/** Fraction of each zoom impulse stored as velocity. */
+	const ZOOM_MOMENTUM_GAIN = 0.48;
+	/** How much velocity is applied per frame before friction. */
+	const ZOOM_VEL_STEP = 0.38;
+	/** Per-frame decay of zoom velocity (higher = longer coast). */
+	const ZOOM_FRICTION = 0.928;
+	const ZOOM_VEL_STOP = 1e-5;
+
+	/** Unbounded log zoom (target + smoothed). Display uses modulo ZOOM_LOG_CYCLE. */
+	let targetZoomLog = 0;
+	let zoomLog = 0;
+	/** Log-zoom velocity per frame (wheel / pinch impulse). */
+	let zoomVelLog = 0;
+	let lastReplicateCycle = 0;
+	/** Active touch pointers for two-finger pinch. */
+	const touchPointers = new Map<number, { x: number; y: number }>();
+	let lastPinchDistance = 0;
 
 	const USER_COLUMN_CAP = 64;
 
@@ -205,6 +241,84 @@
 	}
 
 	/** Inverse pan + perspective: screen click → layer coords for column head. */
+	function displayZoomFromLog(log: number): number {
+		const phase =
+			(((log % ZOOM_LOG_CYCLE) + ZOOM_LOG_CYCLE) % ZOOM_LOG_CYCLE) / ZOOM_LOG_CYCLE;
+		return ZOOM_SCALE_MIN * Math.pow(ZOOM_SCALE_MAX / ZOOM_SCALE_MIN, phase);
+	}
+
+	function currentDisplayZoom(): number {
+		return displayZoomFromLog(zoomLog);
+	}
+
+	function replicateZoomCycle(direction: 1 | -1) {
+		const h = height;
+		if (h < 1) return;
+		for (const layer of layers) {
+			const bandShift = direction * h * 0.38 * layer.speedScale;
+			for (const col of layer.columns) {
+				col.y += bandShift;
+				const tail = col.length * layer.fontSize;
+				const maxY = h + tail;
+				if (col.y > maxY) col.y -= h * 1.15;
+				if (col.y < -tail) col.y += h * 1.15;
+			}
+		}
+	}
+
+	function applyZoomLogDelta(deltaLog: number, w: number, h: number) {
+		if (deltaLog === 0 || w < 1 || h < 1) return;
+		const z0 = displayZoomFromLog(targetZoomLog);
+		targetZoomLog += deltaLog;
+		const z1 = displayZoomFromLog(targetZoomLog);
+		const ratio = z1 / z0;
+		if (ratio !== 1 && Number.isFinite(ratio)) {
+			targetCamX *= ratio;
+			targetCamY *= ratio;
+			clampCamera(w, h);
+		}
+	}
+
+	function impulseZoom(deltaLog: number, w: number, h: number) {
+		if (deltaLog === 0 || w < 1 || h < 1) return;
+		applyZoomLogDelta(deltaLog, w, h);
+		zoomVelLog += deltaLog * ZOOM_MOMENTUM_GAIN;
+	}
+
+	function tickZoom(w: number, h: number, holdMouseZoom = mouseDepthZoom) {
+		if (w >= 1 && h >= 1 && Math.abs(zoomVelLog) > ZOOM_VEL_STOP) {
+			applyZoomLogDelta(zoomVelLog * ZOOM_VEL_STEP, w, h);
+			zoomVelLog *= ZOOM_FRICTION;
+			if (Math.abs(zoomVelLog) < ZOOM_VEL_STOP) zoomVelLog = 0;
+		}
+
+		zoomLog += (targetZoomLog - zoomLog) * ZOOM_SMOOTH;
+		const cycle = Math.floor(zoomLog / ZOOM_LOG_CYCLE);
+		while (lastReplicateCycle < cycle) {
+			lastReplicateCycle += 1;
+			replicateZoomCycle(1);
+		}
+		while (lastReplicateCycle > cycle) {
+			lastReplicateCycle -= 1;
+			replicateZoomCycle(-1);
+		}
+
+		if (holdMouseZoom && w >= 1 && h >= 1) {
+			impulseZoom(ZOOM_MOUSE_HOLD_LOG, w, h);
+		}
+	}
+
+	function seedInitialZoom(w: number, h: number) {
+		if (reduceMotion || w < 1 || h < 1) return;
+		for (let i = 0; i < ZOOM_INITIAL_CLICK_COUNT; i++) {
+			for (let f = 0; f < ZOOM_SIM_HOLD_FRAMES; f++) tickZoom(w, h, true);
+			for (let f = 0; f < ZOOM_SIM_COAST_FRAMES; f++) tickZoom(w, h, false);
+		}
+		zoomVelLog = 0;
+		camX = targetCamX;
+		camY = targetCamY;
+	}
+
 	function layerPointFromScreen(
 		screenX: number,
 		screenY: number,
@@ -217,8 +331,9 @@
 		const panY = camY * parallax;
 		const ox = w * layer.originX;
 		const oy = h * layer.originY;
-		const s = layer.depthScale;
-		const k = layer.skewX;
+		const z = currentDisplayZoom();
+		const s = layer.depthScale * z;
+		const k = layer.skewX * z;
 
 		const ly = oy + (screenY - panY - oy) / s;
 		const lx = ox + (screenX - panX - ox - k * (ly - oy)) / s;
@@ -358,6 +473,10 @@
 			camX = targetCamX;
 			cameraReady = true;
 		}
+		if (!zoomSeeded && cameraReady && w > 0 && h > 0) {
+			seedInitialZoom(w, h);
+			zoomSeeded = true;
+		}
 	}
 
 	function clampCamera(w: number, h: number) {
@@ -368,9 +487,34 @@
 	}
 
 	function tickCamera(w: number, h: number) {
+		tickZoom(w, h);
 		camX += (targetCamX - camX) * 0.14;
 		camY += (targetCamY - camY) * 0.14;
 		clampCamera(w, h);
+	}
+
+	function pinchDistance(): number {
+		const pts = [...touchPointers.values()];
+		if (pts.length < 2) return 0;
+		return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+	}
+
+	function updatePinchZoom(w: number, h: number): boolean {
+		if (touchPointers.size < 2) {
+			lastPinchDistance = 0;
+			return false;
+		}
+		const dist = pinchDistance();
+		if (dist < 1) return true;
+		if (lastPinchDistance > 0) {
+			const ratio = dist / lastPinchDistance;
+			if (Number.isFinite(ratio) && ratio > 0) {
+				applyZoomLogDelta(Math.log(ratio) * ZOOM_PINCH_GAIN, w, h);
+				zoomVelLog += Math.log(ratio) * ZOOM_PINCH_GAIN * ZOOM_MOMENTUM_GAIN * 0.35;
+			}
+		}
+		lastPinchDistance = dist;
+		return true;
 	}
 
 	function bindCameraInput(surface: HTMLElement) {
@@ -378,15 +522,28 @@
 
 		const endDrag = () => {
 			dragPointerId = null;
+			mouseDepthZoom = false;
 			dragAnimPaused = false;
 		};
 
 		const onPointerDown = (e: PointerEvent) => {
 			if (!active) return;
+			if (e.pointerType === 'touch') {
+				touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+				if (touchPointers.size >= 2) {
+					lastPinchDistance = pinchDistance();
+					zoomVelLog *= 0.72;
+					dragAnimPaused = true;
+					return;
+				}
+			}
 			dragPointerId = e.pointerId;
 			dragAnimPaused = true;
 			pointerDownX = e.clientX;
 			pointerDownY = e.clientY;
+			pointerDownAt = performance.now();
+			zoomLogAtPointerDown = targetZoomLog;
+			mouseDepthZoom = e.pointerType === 'mouse' && e.button === 0;
 			lastPointerX = e.clientX;
 			lastPointerY = e.clientY;
 			surface.setPointerCapture(e.pointerId);
@@ -408,6 +565,11 @@
 			const rect = rectOf();
 			const w = rect.width || 1;
 			const h = rect.height || 1;
+
+			if (e.pointerType === 'touch') {
+				touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+				if (updatePinchZoom(w, h)) return;
+			}
 
 			if (e.pointerType === 'touch' || e.pointerType === 'pen') {
 				if (dragPointerId !== e.pointerId) return;
@@ -437,10 +599,29 @@
 		};
 
 		const onPointerUp = (e: PointerEvent) => {
+			if (e.pointerType === 'touch') {
+				const wasPinching = touchPointers.size >= 2;
+				touchPointers.delete(e.pointerId);
+				if (touchPointers.size < 2) lastPinchDistance = 0;
+				if (touchPointers.size >= 2) return;
+				if (wasPinching && touchPointers.size === 1) {
+					dragAnimPaused = false;
+					return;
+				}
+			}
+
 			if (dragPointerId !== e.pointerId) return;
 
 			const moved = Math.hypot(e.clientX - pointerDownX, e.clientY - pointerDownY);
-			if (moved < TAP_SPAWN_PX && e.currentTarget === surface) {
+			const heldMs = performance.now() - pointerDownAt;
+			const zoomedWhileDown = targetZoomLog > zoomLogAtPointerDown + 0.003;
+			if (
+				moved < TAP_SPAWN_PX &&
+				heldMs < 220 &&
+				!zoomedWhileDown &&
+				e.currentTarget === surface &&
+				touchPointers.size === 0
+			) {
 				const rect = rectOf();
 				const w = width > 0 ? width : rect.width;
 				const h = height > 0 ? height : rect.height;
@@ -469,6 +650,9 @@
 			surface.removeEventListener('pointerup', onPointerUp);
 			surface.removeEventListener('pointercancel', onPointerUp);
 			window.removeEventListener('pointermove', onWindowPointerMove);
+			touchPointers.clear();
+			lastPinchDistance = 0;
+			zoomVelLog = 0;
 		};
 	}
 
@@ -579,9 +763,12 @@
 	) {
 		const originX = w * layer.originX;
 		const originY = h * layer.originY;
+		const z = currentDisplayZoom();
+		const depth = layer.depthScale * z;
+		const skew = layer.skewX * z;
 		ctx.translate(layerPanX, layerPanY);
 		ctx.translate(originX, originY);
-		ctx.transform(layer.depthScale, 0, layer.skewX, layer.depthScale, 0, 0);
+		ctx.transform(depth, 0, skew, depth, 0, 0);
 		ctx.translate(-originX, -originY);
 		ctx.font = `${layer.fontSize}px Huba, cursive`;
 		ctx.textBaseline = 'top';

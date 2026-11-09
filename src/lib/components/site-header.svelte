@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import { page } from '$app/state';
 	import { Button } from '#lib/components/ui/button';
+	import CvPdfDownload from './cv-pdf-download.svelte';
 	import { cn } from '#lib/utils';
 	import { layoutNavIndicator, observeNavIndicator } from '#lib/nav-indicator';
 	import LanguageMenu from './language-menu.svelte';
@@ -20,7 +21,7 @@
 	} = $props();
 
 	const navItems = [
-		{ id: 'work', label: 'Work', sections: ['work', 'work-further'] },
+		{ id: 'work', label: 'Work', sections: ['work'] },
 		{ id: 'practice', label: 'Practice', sections: ['practice'] },
 		{ id: 'experience', label: 'Experience', sections: ['experience'] },
 		{ id: 'contact', label: 'Contact', sections: ['contact'] }
@@ -269,6 +270,7 @@
 					>
 				</nav>
 			{/if}
+			<CvPdfDownload />
 			<LanguageMenu />
 			<ThemeToggle />
 			<div class="md:hidden">
