@@ -111,7 +111,7 @@ export const projects: Project[] = [
 			},
 			{
 				src: '/portfolio/izomapa-trebic-bus-night.png',
-				alt: 'Night scene in a housing estate: streetlights, lit windows, and the view following bus 14 through the map.'
+				alt: 'Night scene in a housing estate: streetlights, lit windows, and the view following bus 4 through the map.'
 			}
 		]
 	},
