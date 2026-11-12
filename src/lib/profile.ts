@@ -912,6 +912,11 @@ const earlierSites = [
 		note: 'ExpressionEngine 2, 2012. Custom shop. Design and build.'
 	},
 	{
+		href: 'https://www.slampoetry.cz/',
+		label: 'slampoetry.cz',
+		note: 'ExpressionEngine 2, 2012. Slampoetry community site and shop. Design and build.'
+	},
+	{
 		href: 'https://www.cbdepot.eu/',
 		label: 'cbdepot.eu',
 		note: 'ExpressionEngine 2, 2013. Multi-site. Design and build.'

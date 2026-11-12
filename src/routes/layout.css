@@ -272,8 +272,26 @@
 	}
 }
 
+.site-header {
+	--site-header-height: 3.75rem;
+}
+
+.site-header--mobile-menu-open {
+	z-index: 60;
+	background-color: var(--background);
+}
+
+.site-header--mobile-menu-open .site-header__bar {
+	position: relative;
+	z-index: 1;
+}
+
 .site-header--intro-scrub {
 	z-index: 40;
+}
+
+.site-header--intro-scrub.site-header--mobile-menu-open {
+	z-index: 60;
 }
 
 .site-header__brand-wrap {

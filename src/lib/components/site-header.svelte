@@ -8,6 +8,7 @@
 	import LanguageMenu from './language-menu.svelte';
 	import Mark from './mark.svelte';
 	import ThemeToggle from './theme-toggle.svelte';
+	import MobileHeader from './mobile-header.svelte';
 	import { mediaUrl } from '#lib/media-url';
 	import { person } from '#lib/profile';
 	import { scrollToHomeHero, scrollToHomeIntro } from '#lib/home-intro';
@@ -60,14 +61,11 @@
 	const brandShrinked = $derived(!introScrollActive || introProgress >= 0.98);
 
 	let desktopNav = $state<HTMLElement | null>(null);
-	let mobileNav = $state<HTMLElement | null>(null);
 	let desktopBreadcrumbNav = $state<HTMLElement | null>(null);
-	let mobileBreadcrumbNav = $state<HTMLElement | null>(null);
 
 	let desktopIndicator = $state({ x: 0, width: 0, visible: false });
-	let mobileIndicator = $state({ x: 0, width: 0, visible: false });
 	let desktopBreadcrumbIndicator = $state({ x: 0, width: 0, visible: false });
-	let mobileBreadcrumbIndicator = $state({ x: 0, width: 0, visible: false });
+	let mobileMenuOpen = $state(false);
 
 	let breadcrumbPin = $state<'work' | 'project' | null>(null);
 	const breadcrumbIndicatorId = $derived(breadcrumbPin ?? 'project');
@@ -130,20 +128,6 @@
 	});
 
 	$effect(() => {
-		if (isProjectDetail) return;
-		const active = activeSection;
-		const nav = mobileNav;
-		if (!nav) return;
-
-		const apply = () => {
-			mobileIndicator = layoutNavIndicator(nav, active);
-		};
-
-		apply();
-		return observeNavIndicator(nav, apply);
-	});
-
-	$effect(() => {
 		if (!isProjectDetail) {
 			breadcrumbPin = null;
 			return;
@@ -163,28 +147,13 @@
 		return observeNavIndicator(nav, apply);
 	});
 
-	$effect(() => {
-		if (!isProjectDetail) return;
-		breadcrumbIndicatorId;
-		page.url.pathname;
-		projectPage?.title;
-		const nav = mobileBreadcrumbNav;
-		if (!nav) return;
-
-		const target = breadcrumbIndicatorId;
-		const apply = () => {
-			mobileBreadcrumbIndicator = layoutNavIndicator(nav, target);
-		};
-
-		void tick().then(apply);
-		return observeNavIndicator(nav, apply);
-	});
 </script>
 
 <header
 	class={cn(
-		'sticky top-0 z-20 border-b bg-background/50 backdrop-blur-md',
-		introScrollActive && 'site-header--intro-scrub'
+		'site-header sticky top-0 z-20 border-b bg-background/50 backdrop-blur-md',
+		introScrollActive && 'site-header--intro-scrub',
+		mobileMenuOpen && 'site-header--mobile-menu-open'
 	)}
 
 >
@@ -271,63 +240,21 @@
 					>
 				</nav>
 			{/if}
-			<CvPdfDownload />
-			<LanguageMenu />
-			<ThemeToggle />
-			<div class="md:hidden">
-				<Button href={`mailto:${person.email}`} size="sm">Hire me</Button>
+			<div class="hidden items-center gap-2 md:flex">
+				<CvPdfDownload />
+				<LanguageMenu />
+				<ThemeToggle />
 			</div>
+			<MobileHeader
+				bind:menuOpen={mobileMenuOpen}
+				{navItems}
+				{activeSection}
+				{href}
+				onPinSection={pinSection}
+				isProjectDetail={isProjectDetail && projectPage != null}
+				projectTitle={projectPage?.title ?? ''}
+				onBreadcrumbWork={() => (breadcrumbPin = 'work')}
+			/>
 		</div>
 	</div>
-	{#if isProjectDetail && projectPage}
-		<nav
-			bind:this={mobileBreadcrumbNav}
-			class="site-header__mobile-nav site-nav-rail mx-auto flex w-full max-w-6xl gap-5 overflow-x-auto px-5 pb-3 text-sm md:hidden"
-			aria-label="Breadcrumb"
-		>
-			<a
-				class={navLinkClass(false)}
-				data-nav="work"
-				href="/#work"
-				onclick={() => (breadcrumbPin = 'work')}>Work</a
-			>
-			<span
-				class="site-nav-link min-w-0 truncate font-medium notranslate"
-				data-nav="project"
-				aria-current="page"
-			>
-				{projectPage.title}
-			</span>
-			<span
-				class="site-nav-indicator"
-				class:site-nav-indicator--hidden={!mobileBreadcrumbIndicator.visible}
-				style={indicatorStyle(mobileBreadcrumbIndicator)}
-				aria-hidden="true"
-			></span>
-		</nav>
-	{:else}
-		<nav
-			bind:this={mobileNav}
-			class="site-header__mobile-nav site-nav-rail mx-auto flex w-full max-w-6xl gap-3 overflow-x-auto px-5 pb-3 text-sm md:hidden"
-			aria-label="Page"
-		>
-			{#each navItems as item (item.id)}
-				<a
-					class={navLinkClass(false)}
-					data-nav={item.id}
-					href={href(item.id)}
-					aria-current={activeSection === item.id ? 'page' : undefined}
-					onclick={() => pinSection(item.id)}
-				>
-					{item.label}
-				</a>
-			{/each}
-			<span
-				class="site-nav-indicator"
-				class:site-nav-indicator--hidden={!mobileIndicator.visible}
-				style={indicatorStyle(mobileIndicator)}
-				aria-hidden="true"
-			></span>
-		</nav>
-	{/if}
 </header>
